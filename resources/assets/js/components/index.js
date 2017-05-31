@@ -6,8 +6,7 @@ import Navbar from './narbar'
 class Index extends React.Component {
     render = () => {
         return (
-            <AppBar title='products'>
-            </AppBar>
+            <AppBar title='products'></AppBar>
         )
     }
 }
