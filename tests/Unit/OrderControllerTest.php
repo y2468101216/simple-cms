@@ -21,16 +21,25 @@ class OrderControllerTest extends TestCase
      *
      * @return void
      */
-    public function testStore()
+    public function testStoreUseVirtualAccount()
     {
         
         $productTest = Product::find(static::PRODUCTID);
 
-        $inputOrder = [
+        $prodcuts = [
             $productTest->serial => ['quantity' => static::QTY]
         ];
 
-        $response = $this->actingAs(User::find(static::USERID))->json('POST', route('api.order.store'), $inputOrder);
-        $response->assertStatus(200);
+        $params = [
+            'products' => $prodcuts,
+            'method' => config('order.paymethod.virtual_account')
+        ];
+
+        $response = $this->actingAs(User::find(static::USERID))->json('POST', route('api.order.store'), $params);
+        $response->assertJsonStructure([
+            'data' => [
+                'virtual_account'
+            ]
+        ]);
     }
 }
