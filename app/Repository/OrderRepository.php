@@ -7,10 +7,11 @@ use App\Model\Order;
 use App\Model\Product;
 use Carbon\Carbon;
 use App\Repository\ProductRepository;
+use App\Mail\Order\Compelete;
 
 class OrderRepository
 {
-    public function compelete(User $user, $inputOrder)
+    public function create(User $user, $products, $method) : Order
     {
         \DB::beginTransaction();
 
@@ -19,7 +20,7 @@ class OrderRepository
 
         $productRespoitory = new ProductRepository;
 
-        $isSuccess = $productRespoitory->computeProduct($inputOrder);
+        $isSuccess = $productRespoitory->computeProduct($products);
 
         if (!$isSuccess) {
             return false;
@@ -27,9 +28,13 @@ class OrderRepository
 
         $order->user_id = $user->id;
         $order->serial = Carbon::now()->format('YmdHis').$nextId;
-        $order->status = Order::COMPELETE;
-        $order->paymethod = Order::CREDITCARD;
-        $order->amount = $this->computeAmount($inputOrder);
+        $order->status = config('order.status.wait_paid');
+        $order->paymethod = $method;
+        $order->amount = $this->computeAmount($products);
+
+        if ($method == config('order.paymethod.virtual_account')) {
+            $order->virtual_account = $this->createVirtualAccont();
+        }
 
         $order->save();
 
@@ -38,15 +43,29 @@ class OrderRepository
         return $order;
     }
 
-    public function computeAmount($inputOrder)
+    public function computeAmount($products) : int
     {
         $amount = 0;
 
-        foreach ($inputOrder as $key => $item) {
+        foreach ($products as $key => $item) {
             $product = Product::where('serial', $key)->first();
             $amount += $product->amount * $item['quantity'];
         }
 
         return $amount;
+    }
+
+    public function createVirtualAccont()
+    {
+        return 'abc123';
+    }
+
+    public function compelete(Order $order) : string {
+        $order->status = config('order.status.compelete');
+        $order->save();
+
+        \Mail::to($order->user)->queue(new Compelete($order));
+
+        return config('order.status.compelete');
     }
 }

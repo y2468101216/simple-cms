@@ -17,10 +17,15 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
-        $params = $request->all();
+        $products = $request->input('products');
+        $method = $request->input('method');
         $user = Auth::user();
-        $this->repo->compelete($user, $params);
+        $order = $this->repo->create($user, $products, $method);
 
-        return response('', 200);
+        return response()->json([
+            'data' => [
+                'virtual_account' => $order->virtual_account
+            ]
+        ]);
     }
 }
