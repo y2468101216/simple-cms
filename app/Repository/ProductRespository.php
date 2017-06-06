@@ -7,12 +7,12 @@ use Carbon\Carbon;
 
 class ProductRepository
 {
-    public function computeProduct($inputOrder)
+    public function subProducts($products) : bool
     {
         \DB::beginTransaction();
 
-        foreach ($inputOrder as $serial => $item) {
-            $product = Product::where('serial', $serial)->first();
+        foreach ($products as $id => $item) {
+            $product = Product::find($id);
             $qty = $item['quantity'];
             
             if ($qty > $product->quantity) {
@@ -21,6 +21,23 @@ class ProductRepository
             }
 
             $product->quantity -= $qty;
+            $product->save();
+        }
+
+        \DB::commit();
+
+        return true;
+    }
+
+    public function addProducts($products) : bool
+    {
+        \DB::beginTransaction();
+
+        foreach ($products as $id => $item) {
+            $product = Product::find($id);
+            $qty = $item['quantity'];
+
+            $product->quantity += $qty;
             $product->save();
         }
 

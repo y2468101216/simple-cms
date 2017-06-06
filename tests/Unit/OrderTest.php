@@ -9,15 +9,23 @@ use App\Repository\OrderRepository;
 use App\Model\Product;
 use App\Model\User;
 use App\Model\Order;
+use App\Model\OrderProduct;
 use Carbon\Carbon;
 
 class OrderTest extends TestCase
 {
-     use DatabaseTransactions;
+    use DatabaseTransactions;
 
-     const USERID = 1;
-     const PRODUCTID = 1;
-     const QTY = 1;
+    const USERID = 1;
+    const PRODUCTID = 1;
+    const QTY = 1;
+     
+    public $orderRepository;
+
+    public function __construct()
+    {
+        $this->orderRepository = new OrderRepository;
+    }
     /**
      * A basic test example.
      *
@@ -28,14 +36,14 @@ class OrderTest extends TestCase
         $productTest = Product::find(static::PRODUCTID);
 
         $products = [
-            $productTest->serial => ['quantity' => static::QTY]
+            $productTest->id => ['quantity' => static::QTY]
         ];
 
         $user = User::find(static::USERID);
 
-        $repository = new OrderRepository;
+        
         $method = config('order.paymethod.virtual_account');
-        $order = $repository->create($user, $products, $method);
+        $order = $this->orderRepository->create($user, $products, $method);
 
         $actual = empty($order->virtual_account);
         $expect = false;
@@ -48,31 +56,58 @@ class OrderTest extends TestCase
         $productTest = Product::find(static::PRODUCTID);
 
         $products = [
-            $productTest->serial => ['quantity' => static::QTY],
+            $productTest->id => ['quantity' => static::QTY],
         ];
 
-        $repository = new OrderRepository;
-        $actual = $repository->computeAmount($products);
+        
+        $actual = $this->orderRepository->computeAmount($products);
 
         $expect = 0;
-        $expect += $products[$productTest->serial]['quantity'] * $productTest->amount;
+        $expect += $products[$productTest->id]['quantity'] * $productTest->amount;
         
         $this->assertEquals($actual, $expect);
     }
 
     public function testCompelete()
     {
-        $nextId = Order::count() + 1;
+        
         $order = new order;
         $order->user_id = static::USERID;
-        $order->serial = Carbon::now()->format('YmdHis').$nextId;
+        $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
         $order->status = config('order.status.wait_paid');
         $order->paymethod = config('order.paymethod.virtual_account');
         $order->amount = 1234;
 
-        $repository = new OrderRepository;
-        $actual = $repository->compelete($order);
+        
+        $actual = $this->orderRepository->compelete($order);
         $expect = config('order.status.compelete');
+
+        $this->assertEquals($actual, $expect);
+    }
+
+    public function testCancel()
+    {
+        
+        $order = new order;
+        $order->user_id = static::USERID;
+        $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
+        $order->status = config('order.status.wait_paid');
+        $order->paymethod = config('order.paymethod.virtual_account');
+        $order->amount = 1234;
+
+        $order->save();
+        $order = $order->fresh();
+
+        $orderProduct = new OrderProduct;
+        $orderProduct->order_id = $order->id;
+        $orderProduct->product_id = static::PRODUCTID;
+        $orderProduct->quantity = static::QTY;
+
+        $orderProduct->save();
+
+        
+        $actual = $this->orderRepository->cancel($order);
+        $expect = config('order.status.cancel');
 
         $this->assertEquals($actual, $expect);
     }

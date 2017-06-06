@@ -19,20 +19,40 @@ class ProductTest extends TestCase
      *
      * @return void
      */
-    public function testcomputeProduct()
+    public function testsubProduct()
     {
         $productTest = Product::find(static::PRODUCTID);
 
         $productTestQty = $productTest->quantity;
         $expect = $productTestQty - static::QTY;
 
-        $inputOrder = [
-            $productTest->serial => ['quantity' => static::QTY]
+        $products = [
+            $productTest->id => ['quantity' => static::QTY]
         ];
 
         $productRepository = new ProductRepository;
 
-        $productRepository->computeProduct($inputOrder);
+        $productRepository->subProducts($products);
+
+        $productTest = $productTest->fresh();
+        $actual = $productTest->quantity;
+
+        $this->assertEquals($actual, $expect);
+    }
+
+    public function testAddProduct()
+    {
+        $productTest = Product::find(static::PRODUCTID);
+
+        $productTestQty = $productTest->quantity;
+        $expect = $productTestQty + static::QTY;
+
+        $products = [
+            $productTest->id => ['quantity' => static::QTY]
+        ];
+
+        $productRepository = new ProductRepository;
+        $productRepository->addProducts($products);
 
         $productTest = $productTest->fresh();
         $actual = $productTest->quantity;
