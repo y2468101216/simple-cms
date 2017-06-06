@@ -111,4 +111,18 @@ class OrderTest extends TestCase
 
         $this->assertEquals($actual, $expect);
     }
+
+    public function testWaitPaid()
+    {
+        $order = new order;
+        $order->user_id = static::USERID;
+        $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
+        $order->paymethod = config('order.paymethod.virtual_account');
+        $order->amount = 1234;
+
+        $actual = $this->orderRepository->waitPaid($order);
+        $expect = config('order.status.wait_paid');
+
+        $this->assertEquals($actual, $expect);
+    }
 }
