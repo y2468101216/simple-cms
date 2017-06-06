@@ -8,6 +8,7 @@ use App\Model\Product;
 use Carbon\Carbon;
 use App\Repository\ProductRepository;
 use App\Mail\Order\Compelete;
+use App\Mail\Order\Cancel;
 
 class OrderRepository
 {
@@ -15,19 +16,19 @@ class OrderRepository
     {
         \DB::beginTransaction();
 
-        $nextId = Order::count() + 1;
+        
         $order = new Order;
 
         $productRespoitory = new ProductRepository;
 
-        $isSuccess = $productRespoitory->computeProduct($products);
+        $isSuccess = $productRespoitory->subProducts($products);
 
         if (!$isSuccess) {
             return false;
         }
 
         $order->user_id = $user->id;
-        $order->serial = Carbon::now()->format('YmdHis').$nextId;
+        $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
         $order->status = config('order.status.wait_paid');
         $order->paymethod = $method;
         $order->amount = $this->computeAmount($products);
@@ -48,24 +49,45 @@ class OrderRepository
         $amount = 0;
 
         foreach ($products as $key => $item) {
-            $product = Product::where('serial', $key)->first();
+            $product = Product::find($key);
             $amount += $product->amount * $item['quantity'];
         }
 
         return $amount;
     }
 
-    public function createVirtualAccont()
+    public function createVirtualAccont() : string
     {
         return 'abc123';
     }
 
-    public function compelete(Order $order) : string {
+    public function compelete(Order $order) : string
+    {
         $order->status = config('order.status.compelete');
         $order->save();
 
         \Mail::to($order->user)->queue(new Compelete($order));
 
         return config('order.status.compelete');
+    }
+
+    public function cancel(Order $order) : string
+    {
+        $order->status = config('order.status.cancel');
+        $order->save();
+
+        $productRespoitory = new ProductRepository;
+        $orderProducts = $order->orderProducts()->get();
+
+        $products = [];
+        foreach ($orderProducts as $row) {
+            $products[$row->product_id] = $row->quantity;
+        }
+
+        $isSuccess = $productRespoitory->addProducts($products);
+
+        \Mail::to($order->user)->queue(new Cancel($order));
+
+        return config('order.status.cancel');
     }
 }

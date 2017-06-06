@@ -8,6 +8,9 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use App\Model\User;
 use App\Model\Product;
+use App\Model\Order;
+use App\Model\OrderProduct;
+use Carbon\Carbon;
 
 class OrderControllerTest extends TestCase
 {
@@ -27,7 +30,7 @@ class OrderControllerTest extends TestCase
         $productTest = Product::find(static::PRODUCTID);
 
         $prodcuts = [
-            $productTest->serial => ['quantity' => static::QTY]
+            $productTest->id => ['quantity' => static::QTY]
         ];
 
         $params = [
@@ -41,5 +44,29 @@ class OrderControllerTest extends TestCase
                 'virtual_account'
             ]
         ]);
+    }
+
+    public function testDelete()
+    {
+        
+        $order = new order;
+        $order->user_id = static::USERID;
+        $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
+        $order->status = config('order.status.wait_paid');
+        $order->paymethod = config('order.paymethod.virtual_account');
+        $order->amount = 1234;
+
+        $order->save();
+        $order = $order->fresh();
+
+        $orderProduct = new OrderProduct;
+        $orderProduct->order_id = $order->id;
+        $orderProduct->product_id = static::PRODUCTID;
+        $orderProduct->quantity = static::QTY;
+
+        $orderProduct->save();
+
+        $response = $this->actingAs(User::find(static::USERID))->json('delete', route('api.order.delete', $order->id));
+        $response->assertStatus(200);
     }
 }

@@ -7,6 +7,7 @@ return [
     ],
     'status' => [
         'compelete' => 1,
-        'wait_paid' => 2
+        'wait_paid' => 2,
+        'cancel' => 3,
     ]
 ];

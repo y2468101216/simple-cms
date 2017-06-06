@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Repository\OrderRepository;
+use App\Model\Order;
 use Auth;
 
 class OrderController extends Controller
@@ -27,5 +28,13 @@ class OrderController extends Controller
                 'virtual_account' => $order->virtual_account
             ]
         ]);
+    }
+
+    public function delete(Request $request, $id)
+    {
+        $order = Order::find($id);
+        $this->repo->cancel($order);
+        
+        return response()->json('');
     }
 }
