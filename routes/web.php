@@ -14,3 +14,7 @@
 Route::get('/complete', ['as' => 'callback.complete'], function () {
     return view('order.complete');
 });
+
+Route::get('/complete_error', ['as' => 'callback.complete_error'], function () {
+    return view('order.complete_error');
+});

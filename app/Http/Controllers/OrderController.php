@@ -43,10 +43,10 @@ class OrderController extends Controller
         $serial = $request->input('serial', '');
         $status = $request->input('status', '');
 
-        if ($status == 'success') {
+        if ($this->repo->handleCallback($serial, $status)) {
             return redirect()->route('callback.complete');
         }
 
-        abort(404);
+        return redirect()->route('callback.complete_error');
     }
 }
