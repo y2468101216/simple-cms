@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Repository\ProductRepository;
 use App\Mail\Order\Compelete;
 use App\Mail\Order\Cancel;
+use App\Mail\Order\WaitPaid;
 
 class OrderRepository
 {
@@ -38,6 +39,8 @@ class OrderRepository
         }
 
         $order->save();
+
+        $this->waitPaid($order);
 
         \DB::commit();
 
@@ -89,5 +92,16 @@ class OrderRepository
         \Mail::to($order->user)->queue(new Cancel($order));
 
         return config('order.status.cancel');
+    }
+
+    public function waitPaid(Order $order) : string
+    {
+        if ($order->paymethod == config('order.paymethod.credit_card')) {
+            return config('order.status.wait_paid');
+        }
+
+        \Mail::to($order->user)->queue(new WaitPaid($order));
+
+        return config('order.status.wait_paid');
     }
 }

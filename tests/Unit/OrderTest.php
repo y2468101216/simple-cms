@@ -71,7 +71,7 @@ class OrderTest extends TestCase
     public function testCompelete()
     {
         
-        $order = new order;
+        $order = new Order;
         $order->user_id = static::USERID;
         $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
         $order->status = config('order.status.wait_paid');
@@ -88,7 +88,7 @@ class OrderTest extends TestCase
     public function testCancel()
     {
         
-        $order = new order;
+        $order = new Order;
         $order->user_id = static::USERID;
         $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
         $order->status = config('order.status.wait_paid');
@@ -114,11 +114,14 @@ class OrderTest extends TestCase
 
     public function testWaitPaid()
     {
-        $order = new order;
+        $order = new Order;
         $order->user_id = static::USERID;
         $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
         $order->paymethod = config('order.paymethod.virtual_account');
+        $order->status = config('order.status.wait_paid');
         $order->amount = 1234;
+
+        $order->save();
 
         $actual = $this->orderRepository->waitPaid($order);
         $expect = config('order.status.wait_paid');
