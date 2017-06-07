@@ -8,7 +8,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Model\Order;
 
-class Compelete extends Mailable
+class CompleteError extends Mailable
 {
     use Queueable, SerializesModels;
     public $order;
@@ -31,6 +31,6 @@ class Compelete extends Mailable
     public function build()
     {
         return $this->from(env('MAIL_FROM'))
-        ->view('emails.order.compelete');
+        ->view('emails.order.wait_paid');
     }
 }

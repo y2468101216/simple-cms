@@ -7,9 +7,10 @@ use App\Model\Order;
 use App\Model\Product;
 use Carbon\Carbon;
 use App\Repository\ProductRepository;
-use App\Mail\Order\Compelete;
+use App\Mail\Order\Complete;
 use App\Mail\Order\Cancel;
 use App\Mail\Order\WaitPaid;
+use App\Mail\Order\CompleteError;
 
 class OrderRepository
 {
@@ -64,14 +65,14 @@ class OrderRepository
         return 'abc123';
     }
 
-    public function compelete(Order $order) : string
+    public function complete(Order $order) : string
     {
-        $order->status = config('order.status.compelete');
+        $order->status = config('order.status.complete');
         $order->save();
 
-        \Mail::to($order->user)->queue(new Compelete($order));
+        \Mail::to($order->user)->queue(new Complete($order));
 
-        return config('order.status.compelete');
+        return config('order.status.complete');
     }
 
     public function cancel(Order $order) : string
@@ -103,5 +104,15 @@ class OrderRepository
         \Mail::to($order->user)->queue(new WaitPaid($order));
 
         return config('order.status.wait_paid');
+    }
+
+    public function completeError(Order $order) : string
+    {
+        $order->status = config('order.status.complete_error');
+        $order->save();
+
+        \Mail::to($order->user)->queue(new CompleteError($order));
+
+        return config('order.status.complete_error');
     }
 }

@@ -31,7 +31,7 @@ class OrderTest extends TestCase
      *
      * @return void
      */
-    public function testCompeleteUseVirtualAccount()
+    public function testCompleteUseVirtualAccount()
     {
         $productTest = Product::find(static::PRODUCTID);
 
@@ -68,7 +68,7 @@ class OrderTest extends TestCase
         $this->assertEquals($actual, $expect);
     }
 
-    public function testCompelete()
+    public function testComplete()
     {
         
         $order = new Order;
@@ -79,8 +79,8 @@ class OrderTest extends TestCase
         $order->amount = 1234;
 
         
-        $actual = $this->orderRepository->compelete($order);
-        $expect = config('order.status.compelete');
+        $actual = $this->orderRepository->complete($order);
+        $expect = config('order.status.complete');
 
         $this->assertEquals($actual, $expect);
     }
@@ -129,7 +129,7 @@ class OrderTest extends TestCase
         $this->assertEquals($actual, $expect);
     }
 
-    public function testCompeleteError()
+    public function testCompleteError()
     {
         $order = new Order;
         $order->user_id = static::USERID;
@@ -140,8 +140,8 @@ class OrderTest extends TestCase
 
         $order->save();
 
-        $actual = $this->orderRepository->compeleteError($order);
-        $expect = config('order.status.compelete_error');
+        $actual = $this->orderRepository->completeError($order);
+        $expect = config('order.status.complete_error');
 
         $this->assertEquals($actual, $expect);
     }
