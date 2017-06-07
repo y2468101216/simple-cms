@@ -145,4 +145,21 @@ class OrderTest extends TestCase
 
         $this->assertEquals($actual, $expect);
     }
+
+    public function testhandleCallback()
+    {
+        $order = new Order;
+        $order->user_id = static::USERID;
+        $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
+        $order->paymethod = config('order.paymethod.virtual_account');
+        $order->status = config('order.status.wait_paid');
+        $order->amount = 1234;
+
+        $order->save();
+
+        $actual = $this->orderRepository->handleCallback($order->serial, 'success');
+        $expect = true;
+
+        $this->assertEquals($actual, $expect);
+    }
 }
