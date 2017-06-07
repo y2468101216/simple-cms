@@ -115,4 +115,25 @@ class OrderRepository
 
         return config('order.status.complete_error');
     }
+
+    public function handleCallback(String $serial, String $status) : bool
+    {
+        if (empty($serial)) {
+            return false;
+        }
+
+        $order = Order::where('serial', $serial)->first();
+
+        if (empty($order)) {
+            return false;
+        }
+
+        if ($status != 'success') {
+            return false;
+        }
+
+        $this->complete($order);
+
+        return true;
+    }
 }
