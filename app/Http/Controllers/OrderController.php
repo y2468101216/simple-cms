@@ -37,4 +37,16 @@ class OrderController extends Controller
         
         return response()->json('');
     }
+
+    public function callback(Request $request)
+    {
+        $serial = $request->input('serial', '');
+        $status = $request->input('status', '');
+
+        if ($status == 'success') {
+            return redirect()->route('callback.complete');
+        }
+
+        abort(404);
+    }
 }

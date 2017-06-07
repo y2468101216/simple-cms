@@ -11,6 +11,6 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/complete', ['as' => 'callback.complete'], function () {
+    return view('order.complete');
 });
