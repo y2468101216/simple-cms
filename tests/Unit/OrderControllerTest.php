@@ -71,30 +71,6 @@ class OrderControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function testCallback()
-    {
-        $this->markTestIncomplete();
-        $order = new order;
-        $order->user_id = static::USERID;
-        $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
-        $order->status = config('order.status.wait_paid');
-        $order->paymethod = config('order.paymethod.virtual_account');
-        $order->amount = 1234;
-
-        $order->save();
-        $order = $order->fresh();
-
-        $orderProduct = new OrderProduct;
-        $orderProduct->order_id = $order->id;
-        $orderProduct->product_id = static::PRODUCTID;
-        $orderProduct->quantity = static::QTY;
-
-        $orderProduct->save();
-
-        $response = $this->actingAs(User::find(static::USERID))->post(route('api.order.callback', ['serial' => $order->serial, 'status' => 'success']));
-        $response->assertRedirect(route('callback.complete'));
-    }
-
     public function testGithubCallback()
     {
         
@@ -124,6 +100,32 @@ class OrderControllerTest extends TestCase
         ';
 
         $response = $this->actingAs(User::find(static::USERID))->post(route('api.order.github.callback', ['data' => $xml]));
+        $response->assertRedirect(route('callback.complete'));
+    }
+
+    public function testGoogleCallback()
+    {
+        
+        $order = new order;
+        $order->user_id = static::USERID;
+        $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
+        $order->status = config('order.status.wait_paid');
+        $order->paymethod = config('order.paymethod.virtual_account');
+        $order->amount = 1234;
+
+        $order->save();
+        $order = $order->fresh();
+
+        $orderProduct = new OrderProduct;
+        $orderProduct->order_id = $order->id;
+        $orderProduct->product_id = static::PRODUCTID;
+        $orderProduct->quantity = static::QTY;
+
+        $orderProduct->save();
+
+        $data = ['serial' => $order->serial, 'amount' => $order->amount, 'status' => static::STATUS];
+
+        $response = $this->actingAs(User::find(static::USERID))->post(route('api.order.google.callback', $data));
         $response->assertRedirect(route('callback.complete'));
     }
 }

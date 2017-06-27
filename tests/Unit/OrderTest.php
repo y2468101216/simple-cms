@@ -12,6 +12,7 @@ use App\Model\Order;
 use App\Model\OrderProduct;
 use Carbon\Carbon;
 use App\Service\GithubService;
+use App\Service\GoogleService;
 
 class OrderTest extends TestCase
 {
@@ -148,7 +149,7 @@ class OrderTest extends TestCase
         $this->assertEquals($actual, $expect);
     }
 
-    public function testGithubhandleCallback()
+    public function testGithubHandleCallback()
     {
         $order = new Order;
         $order->user_id = static::USERID;
@@ -168,6 +169,27 @@ class OrderTest extends TestCase
         ';
 
         $service = new GithubService($xml);
+
+        $actual = $this->orderRepository->handleCallback($service);
+        $expect = true;
+
+        $this->assertEquals($actual, $expect);
+    }
+
+    public function testGoogleHandleCallback()
+    {
+        $order = new Order;
+        $order->user_id = static::USERID;
+        $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
+        $order->paymethod = config('order.paymethod.virtual_account');
+        $order->status = config('order.status.wait_paid');
+        $order->amount = 1234;
+
+        $order->save();
+
+        $data = ['serial' => $order->serial, 'amount' => $order->amount, 'status' => static::STATUS];
+
+        $service = new GoogleService($data);
 
         $actual = $this->orderRepository->handleCallback($service);
         $expect = true;

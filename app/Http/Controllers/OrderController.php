@@ -7,6 +7,7 @@ use App\Repository\OrderRepository;
 use App\Model\Order;
 use Auth;
 use App\Service\GithubService;
+use App\Service\GoogleService;
 
 class OrderController extends Controller
 {
@@ -42,6 +43,17 @@ class OrderController extends Controller
     public function githubCallback(Request $request)
     {
         $service = new GithubService($request->input('data'));
+
+        if ($this->repo->handleCallback($service)) {
+            return redirect()->route('callback.complete');
+        }
+
+        return redirect()->route('callback.complete_error');
+    }
+
+    public function googleCallback(Request $request)
+    {
+        $service = new GoogleService($request->all());
 
         if ($this->repo->handleCallback($service)) {
             return redirect()->route('callback.complete');

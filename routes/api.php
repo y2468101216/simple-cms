@@ -23,3 +23,4 @@ Route::group(['middleware' => ['auth:api']], function () {
 });
 
 Route::post('order/github/callback', ['as' => 'api.order.github.callback', 'uses' => '\App\Http\Controllers\OrderController@githubCallback']);
+Route::post('order/google/callback', ['as' => 'api.order.google.callback', 'uses' => '\App\Http\Controllers\OrderController@googleCallback']);

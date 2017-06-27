@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Service\IService;
 
-class GithubService implements IService
+class GoogleService implements IService
 {
     private $serial = '';
     private $status = '';
@@ -17,11 +17,9 @@ class GithubService implements IService
 
     public function handleRequest($data) : void
     {
-        $data = simplexml_load_string($data);
-        
-        $this->serial = (string) $data->serial;
-        $this->amount = (string) $data->amount;
-        $this->status = (string) $data->status;
+        $this->serial = $data['serial'];
+        $this->amount = $data['amount'];
+        $this->status = $data['status'];
     }
 
     public function getSerial() : string
