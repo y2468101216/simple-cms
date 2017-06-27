@@ -11,6 +11,7 @@ use App\Mail\Order\Complete;
 use App\Mail\Order\Cancel;
 use App\Mail\Order\WaitPaid;
 use App\Mail\Order\CompleteError;
+use App\Service\IService;
 
 class OrderRepository
 {
@@ -116,8 +117,10 @@ class OrderRepository
         return config('order.status.complete_error');
     }
 
-    public function handleCallback(String $serial, String $status) : bool
+    public function handleCallback(IService $service) : bool
     {
+        $serial = $service->getSerial();
+
         if (empty($serial)) {
             return false;
         }
@@ -127,6 +130,8 @@ class OrderRepository
         if (empty($order)) {
             return false;
         }
+
+        $status = $service->getStatus();
 
         if ($status != 'success') {
             return false;

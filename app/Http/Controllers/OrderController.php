@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Repository\OrderRepository;
 use App\Model\Order;
 use Auth;
+use App\Service\GithubService;
 
 class OrderController extends Controller
 {
@@ -38,12 +39,11 @@ class OrderController extends Controller
         return response()->json('');
     }
 
-    public function callback(Request $request)
+    public function githubCallback(Request $request)
     {
-        $serial = $request->input('serial', '');
-        $status = $request->input('status', '');
+        $service = new GithubService($request->input('data'));
 
-        if ($this->repo->handleCallback($serial, $status)) {
+        if ($this->repo->handleCallback($service)) {
             return redirect()->route('callback.complete');
         }
 

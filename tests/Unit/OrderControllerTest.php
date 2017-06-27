@@ -19,6 +19,7 @@ class OrderControllerTest extends TestCase
     const USERID = 1;
     const PRODUCTID = 1;
     const QTY = 1;
+    const STATUS = 'success';
     /**
      * A basic test example.
      *
@@ -72,7 +73,7 @@ class OrderControllerTest extends TestCase
 
     public function testCallback()
     {
-        
+        $this->markTestIncomplete();
         $order = new order;
         $order->user_id = static::USERID;
         $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
@@ -91,6 +92,38 @@ class OrderControllerTest extends TestCase
         $orderProduct->save();
 
         $response = $this->actingAs(User::find(static::USERID))->post(route('api.order.callback', ['serial' => $order->serial, 'status' => 'success']));
+        $response->assertRedirect(route('callback.complete'));
+    }
+
+    public function testGithubCallback()
+    {
+        
+        $order = new order;
+        $order->user_id = static::USERID;
+        $order->serial = Carbon::now()->format('YmdHis').$order->getNextId();
+        $order->status = config('order.status.wait_paid');
+        $order->paymethod = config('order.paymethod.virtual_account');
+        $order->amount = 1234;
+
+        $order->save();
+        $order = $order->fresh();
+
+        $orderProduct = new OrderProduct;
+        $orderProduct->order_id = $order->id;
+        $orderProduct->product_id = static::PRODUCTID;
+        $orderProduct->quantity = static::QTY;
+
+        $orderProduct->save();
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>
+            <res>
+                <serial>'.$order->serial.'</serial>
+                <amount>'.$order->amount.'</amount>
+                <status>'.static::STATUS.'</status>
+            </res>
+        ';
+
+        $response = $this->actingAs(User::find(static::USERID))->post(route('api.order.github.callback', ['data' => $xml]));
         $response->assertRedirect(route('callback.complete'));
     }
 }

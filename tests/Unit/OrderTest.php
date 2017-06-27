@@ -11,6 +11,7 @@ use App\Model\User;
 use App\Model\Order;
 use App\Model\OrderProduct;
 use Carbon\Carbon;
+use App\Service\GithubService;
 
 class OrderTest extends TestCase
 {
@@ -19,6 +20,7 @@ class OrderTest extends TestCase
     const USERID = 1;
     const PRODUCTID = 1;
     const QTY = 1;
+    const STATUS = 'success';
      
     public $orderRepository;
 
@@ -146,7 +148,7 @@ class OrderTest extends TestCase
         $this->assertEquals($actual, $expect);
     }
 
-    public function testhandleCallback()
+    public function testGithubhandleCallback()
     {
         $order = new Order;
         $order->user_id = static::USERID;
@@ -157,7 +159,17 @@ class OrderTest extends TestCase
 
         $order->save();
 
-        $actual = $this->orderRepository->handleCallback($order->serial, 'success');
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>
+            <res>
+                <serial>'.$order->serial.'</serial>
+                <amount>'.$order->amount.'</amount>
+                <status>'.static::STATUS.'</status>
+            </res>
+        ';
+
+        $service = new GithubService($xml);
+
+        $actual = $this->orderRepository->handleCallback($service);
         $expect = true;
 
         $this->assertEquals($actual, $expect);

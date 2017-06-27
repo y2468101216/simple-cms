@@ -22,4 +22,4 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::delete('/order/{id}', ['as' => 'api.order.delete', 'uses' => '\App\Http\Controllers\OrderController@delete']);
 });
 
-Route::post('order/callback', ['as' => 'api.order.callback', 'uses' => '\App\Http\Controllers\OrderController@callback']);
+Route::post('order/github/callback', ['as' => 'api.order.github.callback', 'uses' => '\App\Http\Controllers\OrderController@githubCallback']);
